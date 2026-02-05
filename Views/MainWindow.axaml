@@ -1,0 +1,36 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:SyncMP3App.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="SyncMP3App.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="SyncMP3App">
+
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+        to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+
+    <Grid ShowGridLines="True">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width=".20*" />
+            <ColumnDefinition Width=".40*" />
+            <ColumnDefinition Width=".40*" />
+        </Grid.ColumnDefinitions>
+        <StackPanel Grid.Column="0">
+            <Button x:Name="UpdateBtn" Click="BtnUpdate" Content="Update" />
+            <Button x:Name="JoinBtn" Click="BtnJoin" Content="Join Network" />
+            <Button x:Name="GeneratePasswordBtn" Click="BtnGeneratePassword" Content="Generate password" />
+            <Button x:Name="ViewMessagesBtn" Click="BtnViewMessages" Content="Message History" />
+            <Button x:Name="LeaveBtn" Click="BtnLeave" Content="Leave Network" />
+        </StackPanel>
+
+        <TextBlock x:Name="TextBlockA" Grid.Column="1" Text="AAAAA"/>
+        <TextBlock Grid.Column="2" Text="BBBBB"/>
+    </Grid>
+    
+</Window>
