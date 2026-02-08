@@ -16,6 +16,7 @@ namespace SyncMP3App;
 
 public partial class App : Application
 {
+    public static Visual? MainWindow { get; internal set; }
     public IServiceProvider? Services { get; private set; }
     public override void Initialize()
     {
@@ -27,11 +28,14 @@ public partial class App : Application
         StartUpAction.CheckEssentialFiles();
         var services = new ServiceCollection();
 
-        services.AddDbContext<SyncMp3AppContext>(options =>
+        services.AddDbContextFactory<SyncMp3AppContext>(options =>
             options.UseSqlite(DatabaseConfig.ConnectionString));
 
         services.AddSingleton<MainWindowViewModel>();
         services.AddTransient<MainWindow>();
+        services.AddTransient<EndpointEntry>();
+
+        services.AddSingleton<IFolderPickerService, FolderPickerService>();
 
         Services = services.BuildServiceProvider();
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
@@ -39,10 +43,7 @@ public partial class App : Application
             // Avoid duplicate validations from both Avalonia and the CommunityToolkit. 
             // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
             DisableAvaloniaDataAnnotationValidation();
-            desktop.MainWindow = new MainWindow
-            {
-                DataContext = new MainWindowViewModel(),
-            };
+            desktop.MainWindow = Services.GetRequiredService<MainWindow>();
         }
 
         base.OnFrameworkInitializationCompleted();
