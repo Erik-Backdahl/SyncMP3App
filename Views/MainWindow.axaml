@@ -3,27 +3,38 @@
         xmlns:vm="using:SyncMP3App.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="340" d:DesignHeight="230"
         x:Class="SyncMP3App.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
         Title="SyncMP3App">
 
-    <Grid ShowGridLines="True">
+    <Grid ShowGridLines="True" Name="GridOuter">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width=".20*" />
             <ColumnDefinition Width=".40*" />
             <ColumnDefinition Width=".40*" />
         </Grid.ColumnDefinitions>
-        <StackPanel Grid.Column="0">
-            <Button Content="AddFolder" Command="{Binding FolderPickerCommand}"/>
 
-            <Button Content="Update" Command="{Binding UpdateCommand}" />
-            <Button Content="Join" Command="{Binding JoinCommand}" />
+        <Grid Name="GridInner" Grid.Column="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width=".95*"/>
+                <ColumnDefinition Width=".05*"/>
+            </Grid.ColumnDefinitions>
 
-        </StackPanel>
+
+            <StackPanel Grid.Column="0">
+                <Button Content="AddFolder" Command="{Binding FolderPickerCommand}"/>
+
+                <Button Content="Update" Command="{Binding UpdateCommand}" />
+                <Button Content="Join" Command="{Binding CreateCommand}" />
+
+            </StackPanel>
+            <Rectangle Grid.Column="1" Grid.Row="0" Fill="{Binding RectangleColor}">
+            </Rectangle>
+        </Grid>
         <TextBlock x:Name="TextBlockA" Grid.Column="1" Text="{Binding TextBlockAText}"/>
-
+        <TextBlock x:Name="TextBlockB" Grid.Column="2" Text="{Binding TextBlockBText}"/>
         <TextBlock Grid.Column="2" Text="BBBBB"/>
     </Grid>
 

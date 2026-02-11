@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -33,7 +34,7 @@ public static class StartUpAction
         var jsonFormat = new
         {
             GUID = "",
-            UUID = "",
+            UUID = Guid.NewGuid().ToString(),
             DownloadFolder = "",
             RegisteredFolders = new List<string> { }
         };

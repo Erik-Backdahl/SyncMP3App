@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -10,14 +11,16 @@ public partial class MainWindowViewModel : ObservableObject
 {
     private readonly EndpointEntry _endpointEntry;
     private readonly IFolderPickerService _folderPickerService;
-
-
     [ObservableProperty]
     private bool isBusy;
 
     [ObservableProperty]
     private string textBlockAText = "";
+    [ObservableProperty]
+    private string textBlockBText = "";
 
+    [ObservableProperty]
+    private IBrush rectangleColor = Brushes.Gray;
     public MainWindowViewModel(EndpointEntry endpointEntry, IFolderPickerService folderPickerService)
     {
         _folderPickerService = folderPickerService;
@@ -27,18 +30,81 @@ public partial class MainWindowViewModel : ObservableObject
 
     [RelayCommand(CanExecute = nameof(CanExecuteAction))]
     private async Task UpdateAsync()
-        => await RunBusyAsync(_endpointEntry.Update);
+    {
+        try
+        {
+            if (await RunBusyAsync(_endpointEntry.Update))
+            {
+                RectangleColor = Brushes.Green;
+                await CompareAsync();
+            }
+            else
+            {
+                RectangleColor = Brushes.Red;
+            }
+
+        }
+        catch (Exception ex)
+        {
+            TextBlockBText = ex.Message;
+            RectangleColor = Brushes.Red;
+            Console.WriteLine(ex.Message);
+        }
+
+    }
+    private async Task CompareAsync()
+    {
+        try
+        {
+            var response = await _endpointEntry.Compare();
+            
+            if(response.SongGuid.Count > 0)
+            {
+                TextBlockAText = $"({response.SongGuid.Count} New songs detected, attempting to download...";
+                await _endpointEntry.RequestMusic(response);
+            }
+            else
+            {
+                TextBlockAText = "No new songs detected";
+            }
+
+        }
+        catch(Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            TextBlockBText = ex.Message;
+        }
+    }
+
 
     [RelayCommand(CanExecute = nameof(CanExecuteAction))]
-    private async Task JoinAsync()
-        => await RunBusyAsync(_endpointEntry.Join);
-        
+    private async Task CreateAsync()
+    {
+        await RunBusyAsync(_endpointEntry.Create);
+    }
+
     [RelayCommand]
     private async Task FolderPickerAsync()
-        => await EasyEndPoints.FolderPicker(_folderPickerService);
+    {
+        TextBlockAText = await EasyEndPoints.FolderPicker(_folderPickerService);
+    }
 
 
 
+    private async Task<T> RunBusyAsync<T>(Func<Task<T>> action)
+    {
+        if (IsBusy) return default!;
+
+        IsBusy = true;
+        try
+        {
+            return await action();
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
     private async Task RunBusyAsync(Func<Task> action)
     {
         if (IsBusy) return;

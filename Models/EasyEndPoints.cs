@@ -5,13 +5,22 @@ using Avalonia.Platform.Storage;
 
 class EasyEndPoints
 {
-    internal static async Task FolderPicker(IFolderPickerService folderPickerService)
+    internal static async Task<string> FolderPicker(IFolderPickerService folderPickerService)
     {
-        var selectedFolder = await folderPickerService.PickFolderAsync();
-
-        if (selectedFolder != null)
+        try
         {
-            await ModifyAppSettings.TryAddRegisteredFolder(selectedFolder);
+            var selectedFolder = await folderPickerService.PickFolderAsync();
+
+            if (selectedFolder != null)
+            {
+                var message = await ModifyAppSettings.TryAddRegisteredFolder(selectedFolder);
+                return message;
+            }
+            return "No folder selected";
+        }
+        catch (Exception ex)
+        {
+            return $"Error: {ex.Message}";
         }
     }
 }

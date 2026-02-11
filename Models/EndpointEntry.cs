@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -11,13 +15,27 @@ public class EndpointEntry
     {
         _factory = factory;
     }
-    internal async Task Update()
+    internal async Task<bool> Update()
+    {
+        using var dbContext = _factory.CreateDbContext();
+        return await SendHttps.PingRequest();
+    }
+    internal async Task<CompareResonseFormat> Compare()
     {
         using var dbContext = _factory.CreateDbContext();
         await ModifyMusic.SaveAllMusicInSQL(dbContext);
+
+        return JsonSerializer.Deserialize<CompareResonseFormat>(await SendHttps.CompareRequest(dbContext))
+            ?? throw new Exception("Compare request failed");
     }
-    internal async Task Join()
+    internal async Task RequestMusic(CompareResonseFormat allMusicGuids )
     {
-        System.Console.WriteLine("Join start");
+        using var dbContext = _factory.CreateDbContext();
+        await SendHttps.SongRequest(allMusicGuids, dbContext);
     }
+    internal async Task Create()
+    {
+        await SendHttps.CreateRequest();
+    }
+
 }

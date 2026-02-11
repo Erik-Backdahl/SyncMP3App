@@ -15,6 +15,10 @@ using TagLib.IFD;
 
 class ModifyMusic
 {
+    internal static void TrySaveSong(string songRaw)
+    {
+        throw new NotImplementedException();
+    }
     public static async Task SaveAllMusicInSQL(SyncMp3AppContext dbContext)
     {
         var appSettings = await ModifyAppSettings.GetAppSettings();
@@ -23,6 +27,7 @@ class ModifyMusic
         {
             throw new Exception("No folders registered");
         }
+        await dbContext.Database.BeginTransactionAsync();
 
         foreach (string folderPath in appSettings.RegisteredFolders)
         {
@@ -30,33 +35,32 @@ class ModifyMusic
 
             foreach (string musicFile in allFileNames)
             {
-                var musicFileAbsolutePath = Path.Combine(folderPath, musicFile);
-
-                string tag = TryCreateTag(musicFileAbsolutePath);
+                string tag = TryCreateTag(musicFile);
 
                 if (await dbContext.DeviceMusics.AnyAsync(dm => dm.SongGuid == tag))
-                    return;
+                    continue;
 
                 DeviceMusic newMusicEntry = new DeviceMusic
                 {
                     SongGuid = tag,
-                    Name = musicFile,
-                    AbsolutePath = musicFileAbsolutePath
+                    Name = Path.GetFileName(musicFile),
+                    AbsolutePath = musicFile
                 };
                 await dbContext.DeviceMusics.AddAsync(newMusicEntry);
             }
         }
 
-
+        await dbContext.SaveChangesAsync();
+        await dbContext.Database.CommitTransactionAsync();
     }
     private static string TryCreateTag(string FilePath)
     {
         var file = TagLib.File.Create(FilePath);
         if (!string.IsNullOrEmpty(file.Tag.Comment))
-            return file.Tag.Comment;
+            return file.Tag.Comment.Replace("UniqueID:", "");
 
         file.Tag.Comment = Guid.NewGuid().ToString();
 
-        return file.Tag.Comment;
+        return file.Tag.Comment.Replace("UniqueID:", "");
     }
 }
