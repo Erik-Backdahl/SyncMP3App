@@ -8,17 +8,15 @@ using SyncMP3App;
 
 class ModifyAppSettings
 {
-    internal static string? appUuid = GetUuid().ToString();
-    internal static string? appGuid = GetGuid().ToString();
     internal static async Task RegisterNetwork(string networkGuid)
     {
         try
         {
             var appData = await GetAppSettings();
 
-            if(!string.IsNullOrEmpty(appData.GUID))
+            if (!string.IsNullOrEmpty(appData.GUID))
                 throw new Exception("Already in a Network. leave network first if you want to change");
-            
+
             appData.GUID = networkGuid;
         }
         catch (Exception ex)
