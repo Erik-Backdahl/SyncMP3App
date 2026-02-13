@@ -52,7 +52,7 @@ class SendHttps
             throw new Exception("No music detected, no reason to send to server");
 
         var response = await client.SendAsync(request);
-        var parsedResponse  = await ParseHTTP.GetResponseHeadersAndMessage(response);
+        var parsedResponse = await ParseHTTP.GetResponseHeadersAndMessage(response);
         if (response.IsSuccessStatusCode)
         {
             return parsedResponse.Message;
@@ -65,14 +65,17 @@ class SendHttps
     }
     internal static async Task<GenericResponse> JoinRequest(string password)
     {
+        if (password.Length != 6)
+            throw new Exception("invalid password. must be 6 characters");
+        if (!string.IsNullOrEmpty(await ModifyAppSettings.GetGuid()))
+            throw new Exception("Already in a network");
+
+
         var client = new HttpClient();
         var request = ParseHTTP.HTTPRequestFormat("PATCH", "/join-network");
 
         request.Headers.Add("UUID", await ModifyAppSettings.GetUuid());
-        request.Headers.Add("password", password);
-
-        if (!string.IsNullOrEmpty(ModifyAppSettings.appGuid))
-            throw new Exception("Already in a network");
+        request.Headers.Add("NetworkPassword", password);
 
         var response = await client.SendAsync(request);
         var parsedResponse = await ParseHTTP.GetResponseHeadersAndMessage(response);
