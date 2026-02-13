@@ -66,8 +66,6 @@ class ModifyAppSettings
     internal static async Task<string> GetGuid()
     {
         var appSettings = await GetAppSettings();
-        if (string.IsNullOrEmpty(appSettings.UUID))
-            throw new Exception("No GUID header, A network is required for this action");
         return appSettings.GUID;
     }
 }
