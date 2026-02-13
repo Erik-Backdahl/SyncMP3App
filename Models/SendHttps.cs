@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Security.Principal;
 using System.Text;
 using System.Text.Json;
@@ -9,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.ValueGeneration;
 using SyncMP3App.Data;
+using Tmds.DBus.Protocol;
 
 class SendHttps
 {
@@ -33,7 +36,7 @@ class SendHttps
             return false;
         }
     }
-    internal static async Task<string> CompareRequest(SyncMp3AppContext dbContext)
+    internal static async Task<CompareResonseFormatApp> CompareRequest(SyncMp3AppContext dbContext)
     {
         var client = new HttpClient();
         var request = ParseHTTP.HTTPRequestFormat("PUT", "/compare");
@@ -53,10 +56,15 @@ class SendHttps
             throw new Exception("No music detected, no reason to send to server");
 
         var response = await client.SendAsync(request);
-        var parsedResponse = await ParseHTTP.GetResponseHeadersAndMessage(response);
+        var (headers, body)  = await ParseHTTP.GetResponseHeadersAndMessage(response);
         if (response.IsSuccessStatusCode)
         {
-            return parsedResponse.Message;
+            var result = JsonSerializer.Deserialize<CompareResonseFormatApp>(body);
+
+            if (result == null)
+                throw new Exception("Failed to deserialize response");
+
+            return result;
         }
         else
         {
@@ -64,7 +72,7 @@ class SendHttps
         }
 
     }
-    internal static async Task<GenericResponse> JoinRequest(string password)
+    internal static async Task<Dictionary<string,string>> JoinRequest(string password)
     {
         if (password.Length != 6)
             throw new Exception("invalid password. must be 6 characters");
@@ -80,14 +88,14 @@ class SendHttps
         request.Headers.Add("NetworkPassword", password);
 
         var response = await client.SendAsync(request);
-        var parsedResponse = await ParseHTTP.GetResponseHeadersAndMessage(response);
+        var (headers, body) = await ParseHTTP.GetResponseHeadersAndMessage(response);
         if (response.IsSuccessStatusCode)
         {
-            return parsedResponse;
+            return headers;
         }
         else
         {
-            throw new Exception($"Failed to join network: {parsedResponse.Message}");
+            throw new Exception($"Failed to join network: {body}");
         }
     }
     internal static async Task<bool> CreateRequest()
@@ -109,7 +117,7 @@ class SendHttps
         }
     }
 
-    internal static async Task SongRequest(CompareResonseFormat serverResponse, SyncMp3AppContext dbContext)
+    internal static async Task SongRequest(CompareResonseFormatApp serverResponse, SyncMp3AppContext dbContext)
     {
         int successfulDownloads = 0;
         int totalSongs = serverResponse.SongGuid.Count;
@@ -125,10 +133,10 @@ class SendHttps
                 request.Headers.Add("SongGUID", songGuid);
 
                 var response = await client.SendAsync(request);
-                var parsedResponse = await ParseHTTP.GetResponseHeadersAndMessage(response);
+                var (headers, body)  = await ParseHTTP.GetResponseHeadersAndMessage(response);
                 if (response.IsSuccessStatusCode)
                 {
-                    ModifyMusic.TrySaveSong(parsedResponse.Message);
+                    ModifyMusic.TrySaveSong(body);
                 }
                 else
                 {

@@ -21,15 +21,15 @@ public class EndpointEntry
         using var dbContext = _factory.CreateDbContext();
         return await SendHttps.PingRequest();
     }
-    internal async Task<CompareResonseFormat> Compare()
+    internal async Task<CompareResonseFormatApp> Compare()
     {
         using var dbContext = _factory.CreateDbContext();
         await ModifyMusic.SaveAllMusicInSQL(dbContext);
 
-        return JsonSerializer.Deserialize<CompareResonseFormat>(await SendHttps.CompareRequest(dbContext))
-            ?? throw new Exception("Compare request failed");
+        return await SendHttps.CompareRequest(dbContext);
+            
     }
-    internal async Task RequestMusic(CompareResonseFormat allMusicGuids)
+    internal async Task RequestMusic(CompareResonseFormatApp allMusicGuids)
     {
         using var dbContext = _factory.CreateDbContext();
         await SendHttps.SongRequest(allMusicGuids, dbContext);
@@ -43,7 +43,7 @@ public class EndpointEntry
         try
         {
             var response = await SendHttps.JoinRequest(password);
-            await ModifyAppSettings.RegisterNetwork(response.Headers["newGUID"]!);
+            await ModifyAppSettings.RegisterNetwork(response["newGUID"]!);
             return "Joined network successfully";
         }
         catch (Exception ex)

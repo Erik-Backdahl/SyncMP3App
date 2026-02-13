@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-public class CompareResonseFormat
+public class CompareResonseFormatApp
 {
     public List<string> SongGuid {get; set;} = new List<string>();
 }
