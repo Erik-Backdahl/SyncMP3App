@@ -18,6 +18,7 @@ class SendHttps
         var request = ParseHTTP.HTTPRequestFormat("GET", "/ping");
 
         request.Headers.Add("UUID", await ModifyAppSettings.GetUuid());
+        request.Headers.Add("GUID", await ModifyAppSettings.GetGuid());
 
         var response = await client.SendAsync(request);
 
@@ -75,6 +76,7 @@ class SendHttps
         var request = ParseHTTP.HTTPRequestFormat("PATCH", "/join-network");
 
         request.Headers.Add("UUID", await ModifyAppSettings.GetUuid());
+        request.Headers.Add("GUID", await ModifyAppSettings.GetGuid());
         request.Headers.Add("NetworkPassword", password);
 
         var response = await client.SendAsync(request);
@@ -94,7 +96,7 @@ class SendHttps
         var request = ParseHTTP.HTTPRequestFormat("POST", "/create-network");
 
         request.Headers.Add("UUID", await ModifyAppSettings.GetUuid());
-
+        request.Headers.Add("GUID", await ModifyAppSettings.GetGuid());
         var response = await client.SendAsync(request);
         var parsedResponse = await ParseHTTP.GetResponseHeadersAndMessage(response);
         if (response.IsSuccessStatusCode)
