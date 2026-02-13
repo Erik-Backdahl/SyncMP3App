@@ -18,6 +18,8 @@ public partial class MainWindowViewModel : ObservableObject
     private string textBlockAText = "";
     [ObservableProperty]
     private string textBlockBText = "";
+    [ObservableProperty]
+    private string passwordBoxText = "";
 
     [ObservableProperty]
     private IBrush rectangleColor = Brushes.Gray;
@@ -57,8 +59,8 @@ public partial class MainWindowViewModel : ObservableObject
         try
         {
             var response = await _endpointEntry.Compare();
-            
-            if(response.SongGuid.Count > 0)
+
+            if (response.SongGuid.Count > 0)
             {
                 TextBlockAText = $"({response.SongGuid.Count} New songs detected, attempting to download...";
                 await _endpointEntry.RequestMusic(response);
@@ -69,7 +71,7 @@ public partial class MainWindowViewModel : ObservableObject
             }
 
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             Console.WriteLine(ex.Message);
             TextBlockBText = ex.Message;
@@ -87,6 +89,11 @@ public partial class MainWindowViewModel : ObservableObject
     private async Task FolderPickerAsync()
     {
         TextBlockAText = await EasyEndPoints.FolderPicker(_folderPickerService);
+    }
+    [RelayCommand]
+    private async Task JoinAsync()
+    {
+        TextBlockAText = await RunBusyAsync(() => _endpointEntry.Join(PasswordBoxText)); 
     }
 
 
