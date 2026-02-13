@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,7 +29,7 @@ public class EndpointEntry
         return JsonSerializer.Deserialize<CompareResonseFormat>(await SendHttps.CompareRequest(dbContext))
             ?? throw new Exception("Compare request failed");
     }
-    internal async Task RequestMusic(CompareResonseFormat allMusicGuids )
+    internal async Task RequestMusic(CompareResonseFormat allMusicGuids)
     {
         using var dbContext = _factory.CreateDbContext();
         await SendHttps.SongRequest(allMusicGuids, dbContext);
@@ -36,6 +37,19 @@ public class EndpointEntry
     internal async Task Create()
     {
         await SendHttps.CreateRequest();
+    }
+    internal async Task<string> Join(string password)
+    {
+        try
+        {
+            var response = await SendHttps.JoinRequest(password);
+            await ModifyAppSettings.RegisterNetwork(response.Headers["newGUID"]!);
+            return "Joined network successfully";
+        }
+        catch (Exception ex)
+        {
+            return $"Failed to join network{ex.Message}";
+        }
     }
 
 }

@@ -27,7 +27,9 @@
                 <Button Content="AddFolder" Command="{Binding FolderPickerCommand}"/>
 
                 <Button Content="Update" Command="{Binding UpdateCommand}" />
-                <Button Content="Join" Command="{Binding CreateCommand}" />
+                <Button Content="Create" Command="{Binding CreateCommand}" />
+                <Button Content="Join" Command="{Binding JoinCommand}"/>
+                <TextBox x:Name="PasswordBox" Text="{Binding PasswordBoxText}" Width="90" MaxLength="6" Watermark="Enter code"/>
 
             </StackPanel>
             <Rectangle Grid.Column="1" Grid.Row="0" Fill="{Binding RectangleColor}">
@@ -35,6 +37,7 @@
         </Grid>
         <TextBlock x:Name="TextBlockA" Grid.Column="1" Text="{Binding TextBlockAText}"/>
         <TextBlock x:Name="TextBlockB" Grid.Column="2" Text="{Binding TextBlockBText}"/>
+        
         <TextBlock Grid.Column="2" Text="BBBBB"/>
     </Grid>
 

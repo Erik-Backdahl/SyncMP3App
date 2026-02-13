@@ -21,7 +21,7 @@ class SendHttps
 
         var response = await client.SendAsync(request);
 
-        var (header, message) = await ParseHTTP.GetResponseHeadersAndMessage(response);
+        var parsedResponse = await ParseHTTP.GetResponseHeadersAndMessage(response);
         if (response.IsSuccessStatusCode)
         {
             //TODO save messages here
@@ -52,16 +52,38 @@ class SendHttps
             throw new Exception("No music detected, no reason to send to server");
 
         var response = await client.SendAsync(request);
-        var (header, message) = await ParseHTTP.GetResponseHeadersAndMessage(response);
+        var parsedResponse  = await ParseHTTP.GetResponseHeadersAndMessage(response);
         if (response.IsSuccessStatusCode)
         {
-            return message;
+            return parsedResponse.Message;
         }
         else
         {
             throw new Exception($"{response.StatusCode}" + "message");
         }
 
+    }
+    internal static async Task<GenericResponse> JoinRequest(string password)
+    {
+        var client = new HttpClient();
+        var request = ParseHTTP.HTTPRequestFormat("PATCH", "/join-network");
+
+        request.Headers.Add("UUID", await ModifyAppSettings.GetUuid());
+        request.Headers.Add("password", password);
+
+        if (!string.IsNullOrEmpty(ModifyAppSettings.appGuid))
+            throw new Exception("Already in a network");
+
+        var response = await client.SendAsync(request);
+        var parsedResponse = await ParseHTTP.GetResponseHeadersAndMessage(response);
+        if (response.IsSuccessStatusCode)
+        {
+            return parsedResponse;
+        }
+        else
+        {
+            throw new Exception($"Failed to join network: {parsedResponse.Message}");
+        }
     }
     internal static async Task<bool> CreateRequest()
     {
@@ -71,7 +93,7 @@ class SendHttps
         request.Headers.Add("UUID", await ModifyAppSettings.GetUuid());
 
         var response = await client.SendAsync(request);
-        var (header, message) = await ParseHTTP.GetResponseHeadersAndMessage(response);
+        var parsedResponse = await ParseHTTP.GetResponseHeadersAndMessage(response);
         if (response.IsSuccessStatusCode)
         {
             return true;
@@ -98,10 +120,10 @@ class SendHttps
                 request.Headers.Add("SongGUID", songGuid);
 
                 var response = await client.SendAsync(request);
-                var (header, songRaw) = await ParseHTTP.GetResponseHeadersAndMessage(response);
+                var parsedResponse = await ParseHTTP.GetResponseHeadersAndMessage(response);
                 if (response.IsSuccessStatusCode)
                 {
-                    ModifyMusic.TrySaveSong(songRaw);
+                    ModifyMusic.TrySaveSong(parsedResponse.Message);
                 }
                 else
                 {

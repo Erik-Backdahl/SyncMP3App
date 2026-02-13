@@ -1,5 +1,6 @@
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -25,22 +26,21 @@ class ParseHTTP
 
         return request;
     }
-    public static async Task<(Dictionary<string, string>, string message)> GetResponseHeadersAndMessage(HttpResponseMessage serverResponse)
+    public static async Task<GenericResponse> GetResponseHeadersAndMessage(HttpResponseMessage serverResponse)
     {
-        var headers = new Dictionary<string, string>();
-        string message = "";
-
+        GenericResponse response = new();
+        
         foreach (var header in serverResponse.Headers)
         {
-            headers[header.Key] = string.Join(", ", header.Value);
+            response.Headers.Add(header.Key, header.Value.ToString());
         }
 
         if (serverResponse.Content != null)
         {
-            message = await serverResponse.Content.ReadAsStringAsync();
+            response.Message = await serverResponse.Content.ReadAsStringAsync();
         }
-
-        return (headers, message);
+    
+        return response;
     }
     public static async Task<(Dictionary<string, string>, byte[] musicBody)> GetSongHeadersAndSongBytes(HttpResponseMessage serverResponse)
     {
