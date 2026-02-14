@@ -60,10 +60,15 @@ public partial class MainWindowViewModel : ObservableObject
         {
             var response = await _endpointEntry.Compare();
 
-            if (response.SongGuid.Count > 0)
+            if (response.SongToDownload.Count > 0)
             {
-                TextBlockAText = $"({response.SongGuid.Count} New songs detected, attempting to download...";
-                await _endpointEntry.RequestMusic(response);
+                TextBlockAText = $"({response.SongToDownload.Count} New songs detected, attempting to download...";
+                await _endpointEntry.RequestMusic(response.SongToDownload);
+            }
+            if (response.SongToUpload.Count > 0)
+            {
+                TextBlockBText = $"({response.SongToUpload.Count} upload requests";
+                await _endpointEntry.RequestMusic(response.SongToUpload);
             }
             else
             {
@@ -93,7 +98,7 @@ public partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     private async Task JoinAsync()
     {
-        TextBlockAText = await RunBusyAsync(() => _endpointEntry.Join(PasswordBoxText)); 
+        TextBlockAText = await RunBusyAsync(() => _endpointEntry.Join(PasswordBoxText));
     }
 
 

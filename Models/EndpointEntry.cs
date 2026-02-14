@@ -27,12 +27,6 @@ public class EndpointEntry
         await ModifyMusic.SaveAllMusicInSQL(dbContext);
 
         return await SendHttps.CompareRequest(dbContext);
-            
-    }
-    internal async Task RequestMusic(CompareResonseFormatApp allMusicGuids)
-    {
-        using var dbContext = _factory.CreateDbContext();
-        await SendHttps.SongRequest(allMusicGuids, dbContext);
     }
     internal async Task Create()
     {
@@ -50,6 +44,18 @@ public class EndpointEntry
         {
             return $"Failed to join network{ex.Message}";
         }
+    }
+    internal async Task RequestMusic(List<string> downloadMusicGuids)
+    {
+        using var dbContext = _factory.CreateDbContext();
+        await SendHttps.SongRequest(downloadMusicGuids, dbContext);
+    }
+    internal async Task<string> UploadMusic(List<string> uploadMusicGuids)
+    {
+        using var dbContext = _factory.CreateDbContext();
+        await SendHttps.SongUpload(uploadMusicGuids, dbContext);
+
+        return "";
     }
 
 }

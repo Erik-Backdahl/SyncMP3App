@@ -60,6 +60,7 @@ class ModifyMusic
             return file.Tag.Comment.Replace("UniqueID:", "");
 
         file.Tag.Comment = Guid.NewGuid().ToString();
+        file.Save();
 
         return file.Tag.Comment.Replace("UniqueID:", "");
     }

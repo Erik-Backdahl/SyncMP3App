@@ -9,6 +9,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ValueGeneration;
 using SyncMP3App.Data;
 using Tmds.DBus.Protocol;
@@ -56,7 +57,7 @@ class SendHttps
             throw new Exception("No music detected, no reason to send to server");
 
         var response = await client.SendAsync(request);
-        var (headers, body)  = await ParseHTTP.GetResponseHeadersAndMessage(response);
+        var (headers, body) = await ParseHTTP.GetResponseHeadersAndMessage(response);
         if (response.IsSuccessStatusCode)
         {
             var result = JsonSerializer.Deserialize<CompareResonseFormatApp>(body);
@@ -72,7 +73,72 @@ class SendHttps
         }
 
     }
-    internal static async Task<Dictionary<string,string>> JoinRequest(string password)
+    internal static async Task SongRequest(List<string> songsToDownload, SyncMp3AppContext dbContext)
+    {
+        int successfulDownloads = 0;
+        int totalSongs = songsToDownload.Count;
+        foreach (var songGuid in songsToDownload)
+        {
+            try
+            {
+                var client = new HttpClient();
+                var request = ParseHTTP.HTTPRequestFormat("GET", "/get-music");
+
+                request.Headers.Add("UUID", await ModifyAppSettings.GetUuid());
+                request.Headers.Add("GUID", await ModifyAppSettings.GetGuid());
+                request.Headers.Add("SongGUID", songGuid);
+
+                var response = await client.SendAsync(request);
+                var (headers, body) = await ParseHTTP.GetResponseHeadersAndMessage(response);
+                if (response.IsSuccessStatusCode)
+                {
+                    ModifyMusic.TrySaveSong(body);
+                }
+                else
+                {
+
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }
+    }
+
+    internal static async Task SongUpload(List<string> uploadMusicGuids, SyncMp3AppContext dbContext)
+    {
+        foreach (string songGuid in uploadMusicGuids)
+        {
+            var songInfo = await dbContext.DeviceMusics.Where(m => m.SongGuid == songGuid).FirstOrDefaultAsync();
+
+            if (songInfo == null)
+                continue;
+
+            try
+            {
+                var client = new HttpClient();
+                var request = ParseHTTP.HTTPRequestFormat("POST", "/upload");
+
+                request.Headers.Add("UUID", await ModifyAppSettings.GetUuid());
+                request.Headers.Add("GUID", await ModifyAppSettings.GetGuid());
+                request.Headers.Add("SongGUID", songInfo.SongGuid);
+                request.Headers.Add("SongName", songInfo.Name);
+
+                var response = await client.SendAsync(request);
+                var (headers, body) = await ParseHTTP.GetResponseHeadersAndMessage(response);
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+        }
+    }
+
+     internal static async Task<Dictionary<string, string>> JoinRequest(string password)
     {
         if (password.Length != 6)
             throw new Exception("invalid password. must be 6 characters");
@@ -114,40 +180,6 @@ class SendHttps
         else
         {
             return false;
-        }
-    }
-
-    internal static async Task SongRequest(CompareResonseFormatApp serverResponse, SyncMp3AppContext dbContext)
-    {
-        int successfulDownloads = 0;
-        int totalSongs = serverResponse.SongGuid.Count;
-        foreach (var songGuid in serverResponse.SongGuid)
-        {
-            try
-            {
-                var client = new HttpClient();
-                var request = ParseHTTP.HTTPRequestFormat("GET", "/get-music");
-
-                request.Headers.Add("UUID", await ModifyAppSettings.GetUuid());
-                request.Headers.Add("GUID", await ModifyAppSettings.GetGuid());
-                request.Headers.Add("SongGUID", songGuid);
-
-                var response = await client.SendAsync(request);
-                var (headers, body)  = await ParseHTTP.GetResponseHeadersAndMessage(response);
-                if (response.IsSuccessStatusCode)
-                {
-                    ModifyMusic.TrySaveSong(body);
-                }
-                else
-                {
-
-                }
-
-            }
-            catch (Exception ex)
-            {
-
-            }
         }
     }
 }
