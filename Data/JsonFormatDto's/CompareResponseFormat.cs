@@ -3,7 +3,6 @@ using System.Text.Json.Serialization;
 
 public class CompareResonseFormatApp
 {
-    [JsonPropertyName("songGuid")]
     public List<string> SongToDownload { get; set; } = new List<string>();
     public List<string> SongToUpload { get; set; } = new List<string>();
     public int NewSongsRequested { get; set; } = 0;

@@ -48,7 +48,7 @@ public class EndpointEntry
     internal async Task RequestMusic(List<string> downloadMusicGuids)
     {
         using var dbContext = _factory.CreateDbContext();
-        await SendHttps.SongRequest(downloadMusicGuids, dbContext);
+        await SendHttps.SongDownload(downloadMusicGuids, dbContext);
     }
     internal async Task<string> UploadMusic(List<string> uploadMusicGuids)
     {

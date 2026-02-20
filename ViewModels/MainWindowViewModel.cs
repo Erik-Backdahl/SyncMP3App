@@ -68,7 +68,7 @@ public partial class MainWindowViewModel : ObservableObject
             if (response.SongToUpload.Count > 0)
             {
                 TextBlockBText = $"({response.SongToUpload.Count} upload requests";
-                await _endpointEntry.RequestMusic(response.SongToUpload);
+                await _endpointEntry.UploadMusic(response.SongToUpload);
             }
             else
             {

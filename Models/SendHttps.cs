@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Security.Principal;
 using System.Text;
@@ -60,7 +62,12 @@ class SendHttps
         var (headers, body) = await ParseHTTP.GetResponseHeadersAndMessage(response);
         if (response.IsSuccessStatusCode)
         {
-            var result = JsonSerializer.Deserialize<CompareResonseFormatApp>(body);
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+
+            var result = JsonSerializer.Deserialize<CompareResonseFormatApp>(body, options);
 
             if (result == null)
                 throw new Exception("Failed to deserialize response");
@@ -73,7 +80,7 @@ class SendHttps
         }
 
     }
-    internal static async Task SongRequest(List<string> songsToDownload, SyncMp3AppContext dbContext)
+    internal static async Task SongDownload(List<string> songsToDownload, SyncMp3AppContext dbContext)
     {
         int successfulDownloads = 0;
         int totalSongs = songsToDownload.Count;
@@ -92,7 +99,7 @@ class SendHttps
                 var (headers, body) = await ParseHTTP.GetResponseHeadersAndMessage(response);
                 if (response.IsSuccessStatusCode)
                 {
-                    ModifyMusic.TrySaveSong(body);
+                    ModifyMusic.TrySaveSong(headers, response);
                 }
                 else
                 {
@@ -124,7 +131,15 @@ class SendHttps
                 request.Headers.Add("UUID", await ModifyAppSettings.GetUuid());
                 request.Headers.Add("GUID", await ModifyAppSettings.GetGuid());
                 request.Headers.Add("SongGUID", songInfo.SongGuid);
-                request.Headers.Add("SongName", songInfo.Name);
+
+                string encodedSongName = Uri.EscapeDataString(songInfo.Name);
+
+                request.Headers.Add("SongName", encodedSongName);
+
+                byte[] songBytes = File.ReadAllBytes(songInfo.AbsolutePath);
+                request.Content = new ByteArrayContent(songBytes);
+
+                request.Content.Headers.ContentType = new MediaTypeHeaderValue("audio/mpeg");
 
                 var response = await client.SendAsync(request);
                 var (headers, body) = await ParseHTTP.GetResponseHeadersAndMessage(response);
@@ -134,11 +149,10 @@ class SendHttps
             {
                 Console.WriteLine(ex.Message);
             }
-
         }
     }
 
-     internal static async Task<Dictionary<string, string>> JoinRequest(string password)
+    internal static async Task<Dictionary<string, string>> JoinRequest(string password)
     {
         if (password.Length != 6)
             throw new Exception("invalid password. must be 6 characters");

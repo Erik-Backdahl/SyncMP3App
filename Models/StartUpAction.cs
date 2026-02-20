@@ -12,7 +12,7 @@ public static class StartUpAction
     internal static void CheckEssentialFiles()
     {
         TryCreateEmptyDatabase();
-        TryCreateEmptyMessagesJson();
+        /* TryCreateEmptyMessagesJson(); */
         TryCreateEmptyAppSettingsJson();
     }
     private static void TryCreateEmptyDatabase()
@@ -41,7 +41,7 @@ public static class StartUpAction
         string jsonString = JsonSerializer.Serialize(jsonFormat, new JsonSerializerOptions { WriteIndented = true });
         File.WriteAllText(DatabaseConfig.AppSettingsJson, jsonString);
     }
-    private static void TryCreateEmptyMessagesJson()
+   /*  private static void TryCreateEmptyMessagesJson()
     {
         if (File.Exists(DatabaseConfig.MessagesJson))
             return;
@@ -52,6 +52,6 @@ public static class StartUpAction
         };
         string jsonString = JsonSerializer.Serialize(jsonFormat, new JsonSerializerOptions { WriteIndented = true });
         File.WriteAllText(DatabaseConfig.MessagesJson, jsonString);
-    }
+    } */
 
 }

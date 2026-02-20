@@ -9,8 +9,10 @@ public partial class SyncMp3AppContext : DbContext
     {
     }
     public DbSet<DeviceMusic> DeviceMusics { get; set; }
+    public DbSet<Messages> Messages { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<DeviceMusic>();
+        modelBuilder.Entity<Messages>();
     }
 }

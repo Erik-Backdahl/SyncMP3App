@@ -4,20 +4,30 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Avalonia.Markup.Xaml.Styling;
 using HarfBuzzSharp;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
+using SyncMP3App;
 using SyncMP3App.Data;
 using TagLib.IFD;
 
 class ModifyMusic
 {
-    internal static void TrySaveSong(string songRaw)
+    internal static async Task TrySaveSong(Dictionary<string, string> headers, HttpResponseMessage response)
     {
-        throw new NotImplementedException();
+        using var memoryStream = new MemoryStream();
+        await response.Content.CopyToAsync(memoryStream);
+        byte[] songBytes = memoryStream.ToArray();
+
+        var appSettings = DatabaseConfig.AppSettingsJson;
+
+        Console.Write(appSettings);
+
     }
     public static async Task SaveAllMusicInSQL(SyncMp3AppContext dbContext)
     {
